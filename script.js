@@ -4,23 +4,22 @@ const clases = [
   "Sandalia", "Camisa", "Zapatilla", "Bolso", "Botín"
 ];
 
-// Cargar modelo al iniciar
+// Cargar el modelo
 (async () => {
   modelo = await tf.loadLayersModel('model.json');
   console.log('Modelo cargado');
 })();
 
-// Detectar cuando suben imagen
+// Subir imagen
 document.getElementById('file-input').addEventListener('change', (e) => {
   const archivo = e.target.files[0];
   if (archivo) {
     const img = document.getElementById('imagen');
     img.src = URL.createObjectURL(archivo);
-    img.onload = async () => {
-      await predecirImagen(img);
+    img.onload = () => {
+      predecirImagen(img);
     };
     img.style.display = "block";
-    document.getElementById('video').style.display = "none"; // Ocultar video si estaba activo
   }
 });
 
@@ -31,7 +30,6 @@ document.getElementById('camara-btn').addEventListener('click', () => {
     .then(stream => {
       video.srcObject = stream;
       video.style.display = "block";
-      document.getElementById('imagen').style.display = "none"; // Ocultar imagen si había
       document.getElementById('capturar-btn').style.display = "inline-block";
     })
     .catch(err => {
@@ -39,43 +37,49 @@ document.getElementById('camara-btn').addEventListener('click', () => {
     });
 });
 
-// Capturar imagen de la cámara
-document.getElementById('capturar-btn').addEventListener('click', async () => {
+// Capturar imagen desde cámara
+document.getElementById('capturar-btn').addEventListener('click', () => {
   const video = document.getElementById('video');
   const canvas = document.getElementById('canvas');
   const ctx = canvas.getContext('2d');
-  
-  // Capturar de video a 200x200 (mayor calidad), luego reducimos
-  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+  ctx.drawImage(video, 0, 0, 28, 28);
 
   const img = new Image();
   img.src = canvas.toDataURL();
-  img.onload = async () => {
-    await predecirImagen(img);
+  img.onload = () => {
+    predecirImagen(img);
   };
 });
 
-// Función principal para predecir
+// Función para predecir una imagen
 async function predecirImagen(imagen) {
-  if (!modelo) {
-    console.log('Modelo aún no cargado.');
-    return;
+  // Crear un canvas temporal
+  let canvas = document.createElement('canvas');
+  canvas.width = 28;
+  canvas.height = 28;
+  let ctx = canvas.getContext('2d');
+
+  // Dibujar la imagen y convertir a escala de grises
+  ctx.drawImage(imagen, 0, 0, 28, 28);
+
+  let imgData = ctx.getImageData(0, 0, 28, 28);
+  let grayData = new Uint8ClampedArray(28 * 28);
+
+  for (let i = 0; i < imgData.data.length; i += 4) {
+    // Promedio de R, G y B para gris
+    let avg = (imgData.data[i] + imgData.data[i+1] + imgData.data[i+2]) / 3;
+    grayData[i / 4] = avg;
   }
 
-  // Redibujar en 28x28 internamente
-  let tmpCanvas = document.createElement('canvas');
-  let tmpCtx = tmpCanvas.getContext('2d');
-  tmpCanvas.width = 28;
-  tmpCanvas.height = 28;
-  tmpCtx.drawImage(imagen, 0, 0, 28, 28);
-
-  let imageData = tmpCtx.getImageData(0, 0, 28, 28);
-  let tensor = tf.browser.fromPixels(imageData, 1) // Escala de grises
+  // Crear tensor
+  let tensor = tf.tensor(grayData, [28, 28, 1])
     .toFloat()
     .div(255.0)
-    .expandDims(0);
+    .expandDims(0); // batch size 1
 
-  const pred = modelo.predict(tensor);
+  // Predecir
+  const pred = await modelo.predict(tensor);
   const predArray = await pred.array();
   const idx = predArray[0].indexOf(Math.max(...predArray[0]));
 
