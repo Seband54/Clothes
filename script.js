@@ -1,8 +1,32 @@
-﻿let modelo;
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Detector de Prendas</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.9.0/dist/tf.min.js"></script>
+  <script defer src="script.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; margin-top: 20px; }
+    #video, #imagen, #canvas { display: none; margin-top: 20px; }
+    button { margin: 10px; padding: 10px 20px; }
+  </style>
+</head>
+<body>
 
-async function cargarModelo() {
-  modelo = await tf.loadLayersModel('model.json');
-  console.log("Modelo cargado correctamente");
-}
+  <h1>Detector de Prendas</h1>
 
-cargarModelo();
+  <input type="file" id="file-input" accept="image/*">
+  <br>
+  <button id="camara-btn">Usar Cámara</button>
+  <button id="capturar-btn" style="display:none;">Capturar Imagen</button>
+
+  <br>
+  <video id="video" width="200" height="150" autoplay></video>
+  <canvas id="canvas" width="28" height="28"></canvas>
+  <img id="imagen" alt="Imagen seleccionada">
+
+  <h2 id="resultado"></h2>
+
+</body>
+</html>
