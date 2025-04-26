@@ -1,32 +1,67 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Detector de Prendas</title>
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.9.0/dist/tf.min.js"></script>
-  <script defer src="script.js"></script>
-  <style>
-    body { font-family: Arial, sans-serif; text-align: center; margin-top: 20px; }
-    #video, #imagen, #canvas { display: none; margin-top: 20px; }
-    button { margin: 10px; padding: 10px 20px; }
-  </style>
-</head>
-<body>
+let modelo;
+const clases = [
+  "Camiseta/top", "Pantalón", "Suéter", "Vestido", "Abrigo",
+  "Sandalia", "Camisa", "Zapatilla", "Bolso", "Botín"
+];
 
-  <h1>Detector de Prendas</h1>
+// Cargar modelo al iniciar
+(async () => {
+  modelo = await tf.loadLayersModel('modelo_exportado/model.json');
+  console.log('Modelo cargado');
+})();
 
-  <input type="file" id="file-input" accept="image/*">
-  <br>
-  <button id="camara-btn">Usar Cámara</button>
-  <button id="capturar-btn" style="display:none;">Capturar Imagen</button>
+// Detectar cuando suben imagen
+document.getElementById('file-input').addEventListener('change', (e) => {
+  const archivo = e.target.files[0];
+  if (archivo) {
+    const img = document.getElementById('imagen');
+    img.src = URL.createObjectURL(archivo);
+    img.onload = async () => {
+      predecirImagen(img);
+    };
+    img.style.display = "block";
+  }
+});
 
-  <br>
-  <video id="video" width="200" height="150" autoplay></video>
-  <canvas id="canvas" width="28" height="28"></canvas>
-  <img id="imagen" alt="Imagen seleccionada">
+// Activar cámara
+document.getElementById('camara-btn').addEventListener('click', () => {
+  const video = document.getElementById('video');
+  navigator.mediaDevices.getUserMedia({ video: true })
+    .then(stream => {
+      video.srcObject = stream;
+      video.style.display = "block";
+      document.getElementById('capturar-btn').style.display = "inline-block";
+    })
+    .catch(err => {
+      console.error('Error accediendo a la cámara', err);
+    });
+});
 
-  <h2 id="resultado"></h2>
+// Capturar imagen de la cámara
+document.getElementById('capturar-btn').addEventListener('click', () => {
+  const video = document.getElementById('video');
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  
+  ctx.drawImage(video, 0, 0, 28, 28);
+  
+  const img = new Image();
+  img.src = canvas.toDataURL();
+  img.onload = async () => {
+    predecirImagen(img);
+  };
+});
 
-</body>
-</html>
+// Función principal para predecir
+async function predecirImagen(img) {
+  let tensor = tf.browser.fromPixels(img, 1)
+    .resizeNearestNeighbor([28, 28])
+    .toFloat()
+    .div(255.0)
+    .expandDims(0);
+
+  const pred = modelo.predict(tensor);
+  const idx = pred.argMax(1).dataSync()[0];
+
+  document.getElementById('resultado').innerText = `Predicción: ${clases[idx]}`;
+}
