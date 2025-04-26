@@ -54,6 +54,11 @@ document.getElementById('capturar-btn').addEventListener('click', () => {
 
 // Función para predecir una imagen
 async function predecirImagen(imagen) {
+  if (!modelo) {
+    console.error("El modelo no está cargado aún.");
+    return;
+  }
+
   // Crear un canvas temporal
   let canvas = document.createElement('canvas');
   canvas.width = 28;
@@ -72,16 +77,19 @@ async function predecirImagen(imagen) {
     grayData[i / 4] = avg;
   }
 
-  // Crear tensor
+  // Crear tensor con dimensiones correctas (28, 28, 1) y normalizar
   let tensor = tf.tensor(grayData, [28, 28, 1])
     .toFloat()
     .div(255.0)
-    .expandDims(0); // batch size 1
+    .expandDims(0); // Añadir el batch size
 
   // Predecir
-  const pred = await modelo.predict(tensor);
-  const predArray = await pred.array();
-  const idx = predArray[0].indexOf(Math.max(...predArray[0]));
-
-  document.getElementById('resultado').innerText = `Predicción: ${clases[idx]}`;
+  try {
+    const pred = await modelo.predict(tensor);
+    const predArray = await pred.array();
+    const idx = predArray[0].indexOf(Math.max(...predArray[0]));
+    document.getElementById('resultado').innerText = `Predicción: ${clases[idx]}`;
+  } catch (error) {
+    console.error("Error al predecir:", error);
+  }
 }
