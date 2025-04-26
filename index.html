@@ -1,22 +1,23 @@
-<input type="file" accept="image/*" onchange="procesarImagen(event)">
-<canvas id="previewCanvas" width="28" height="28" style="display:none;"></canvas>
-<p id="resultado"></p>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Detector de Prendas</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+  <script defer src="script.js"></script>
+</head>
+<body>
+  <div class="contenedor">
+    <h1>Detector de Prendas</h1>
 
-<script>
-function procesarImagen(event) {
-  const archivo = event.target.files[0];
-  const lector = new FileReader();
+    <label for="inputImagen" class="boton-subir">📷 Seleccionar imagen</label>
+    <input id="inputImagen" type="file" accept="image/*" onchange="procesarImagen(event)" hidden>
 
-  lector.onload = function(e) {
-    const img = new Image();
-    img.onload = function() {
-      const canvas = document.getElementById("previewCanvas");
-      const ctx = canvas.getContext("2d");
-      ctx.drawImage(img, 0, 0, 28, 28); // Redimensionar
-      predecirImagen(canvas);
-    };
-    img.src = e.target.result;
-  };
-  lector.readAsDataURL(archivo);
-}
-</script>
+    <canvas id="previewCanvas" width="28" height="28" style="display:none;"></canvas>
+
+    <div id="resultado">🔍 Esperando imagen...</div>
+  </div>
+</body>
+</html>
