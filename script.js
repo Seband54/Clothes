@@ -6,7 +6,7 @@ const clases = [
 
 // Cargar modelo al iniciar
 (async () => {
-  modelo = await tf.loadLayersModel('modelo_exportado/model.json');
+  modelo = await tf.loadLayersModel('model.json');
   console.log('Modelo cargado');
 })();
 
