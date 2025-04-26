@@ -6,7 +6,7 @@ const clases = [
 
 // Cargar el modelo
 (async () => {
-  modelo = await tf.loadLayersModel('model.json');
+  modelo = await tf.loadLayersModel('model.json');  // Asegúrate de que el modelo esté disponible en 'model.json'
   console.log('Modelo cargado');
 })();
 
@@ -15,81 +15,39 @@ document.getElementById('file-input').addEventListener('change', (e) => {
   const archivo = e.target.files[0];
   if (archivo) {
     const img = document.getElementById('imagen');
-    img.src = URL.createObjectURL(archivo);
-    img.onload = () => {
-      predecirImagen(img);
+    const reader = new FileReader();
+    
+    reader.onload = (event) => {
+      img.src = event.target.result;
+      img.onload = async () => {
+        const imagenTensor = tf.browser.fromPixels(img).resizeNearestNeighbor([28, 28]).toFloat().expandDims(0).mean(2);
+        const predicciones = await modelo.predict(imagenTensor);
+        const prediccion = predicciones.argMax(-1).dataSync()[0];
+        document.getElementById('resultado').innerText = `Predicción: ${clases[prediccion]}`;
+      };
     };
-    img.style.display = "block";
+    reader.readAsDataURL(archivo);
   }
 });
 
-// Activar cámara
-document.getElementById('camara-btn').addEventListener('click', () => {
+// Usar la cámara
+document.getElementById('camara-btn').addEventListener('click', async () => {
   const video = document.getElementById('video');
-  navigator.mediaDevices.getUserMedia({ video: true })
-    .then(stream => {
-      video.srcObject = stream;
-      video.style.display = "block";
-      document.getElementById('capturar-btn').style.display = "inline-block";
-    })
-    .catch(err => {
-      console.error('Error accediendo a la cámara', err);
-    });
+  const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+  video.srcObject = stream;
+  document.getElementById('capturar-btn').style.display = 'block';
 });
 
-// Capturar imagen desde cámara
+// Capturar imagen desde la cámara
 document.getElementById('capturar-btn').addEventListener('click', () => {
   const video = document.getElementById('video');
   const canvas = document.getElementById('canvas');
   const ctx = canvas.getContext('2d');
-
   ctx.drawImage(video, 0, 0, 28, 28);
-
-  const img = new Image();
-  img.src = canvas.toDataURL();
-  img.onload = () => {
-    predecirImagen(img);
-  };
+  const imagenTensor = tf.browser.fromPixels(canvas).toFloat().expandDims(0).mean(2);  // Convertir a escala de grises
+  modelo.predict(imagenTensor).then(predicciones => {
+    const prediccion = predicciones.argMax(-1).dataSync()[0];
+    document.getElementById('resultado').innerText = `Predicción: ${clases[prediccion]}`;
+  });
 });
 
-// Función para predecir una imagen
-async function predecirImagen(imagen) {
-  if (!modelo) {
-    console.error("El modelo no está cargado aún.");
-    return;
-  }
-
-  // Crear un canvas temporal
-  let canvas = document.createElement('canvas');
-  canvas.width = 28;
-  canvas.height = 28;
-  let ctx = canvas.getContext('2d');
-
-  // Dibujar la imagen y convertir a escala de grises
-  ctx.drawImage(imagen, 0, 0, 28, 28);
-
-  let imgData = ctx.getImageData(0, 0, 28, 28);
-  let grayData = new Uint8ClampedArray(28 * 28);
-
-  for (let i = 0; i < imgData.data.length; i += 4) {
-    // Promedio de R, G y B para gris
-    let avg = (imgData.data[i] + imgData.data[i+1] + imgData.data[i+2]) / 3;
-    grayData[i / 4] = avg;
-  }
-
-  // Crear tensor con dimensiones correctas (28, 28, 1) y normalizar
-  let tensor = tf.tensor(grayData, [28, 28, 1])
-    .toFloat()
-    .div(255.0)
-    .expandDims(0); // Añadir el batch size
-
-  // Predecir
-  try {
-    const pred = await modelo.predict(tensor);
-    const predArray = await pred.array();
-    const idx = predArray[0].indexOf(Math.max(...predArray[0]));
-    document.getElementById('resultado').innerText = `Predicción: ${clases[idx]}`;
-  } catch (error) {
-    console.error("Error al predecir:", error);
-  }
-}
