@@ -28,7 +28,7 @@ function limpiarCanvas() {
 }
 
 async function cargarModelo() {
-    modelo = await tf.loadLayersModel('modelo_js/model.json');
+    modelo = await tf.loadLayersModel('model.json');
     console.log("Modelo cargado");
 }
 
