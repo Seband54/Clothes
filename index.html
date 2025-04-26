@@ -3,10 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <title>Predicción de Prendas</title>
+    <style>
+        #canvas {
+            border: 1px solid #000;
+        }
+        #resultado {
+            font-weight: bold;
+            font-size: 1.2rem;
+            text-align: center;
+        }
+    </style>
 </head>
 <body>
     <h1>¿Qué prenda dibujaste?</h1>
-    <canvas id="canvas" width="280" height="280" style="border:1px solid #000;"></canvas>
+    <canvas id="canvas" width="280" height="280"></canvas>
     <br>
     <button onclick="limpiarCanvas()">Limpiar</button>
     <button onclick="predecir()">Predecir</button>
