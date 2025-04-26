@@ -1,65 +1,51 @@
-let modelo;
-const canvas = document.getElementById('canvas');
-const ctx = canvas.getContext('2d');
-let dibujando = false;
+let modelo = null;
+let canvas = document.getElementById("canvas");
+let ctx = canvas.getContext("2d");
+let resultado = document.getElementById("resultado");
 
-// Inicializar fondo blanco
-ctx.fillStyle = "white";
-ctx.fillRect(0, 0, canvas.width, canvas.height);
+// Cargar el modelo preentrenado
+(async () => {
+    console.log("Cargando modelo...");
+    modelo = await tf.loadLayersModel("ruta/a/tu/modelo/model.json");
+    console.log("Modelo cargado...");
+})();
 
-// Eventos para dibujar
-canvas.addEventListener('mousedown', () => dibujando = true);
-canvas.addEventListener('mouseup', () => dibujando = false);
-canvas.addEventListener('mouseout', () => dibujando = false);
-canvas.addEventListener('mousemove', dibujar);
-
-function dibujar(evento) {
-    if (!dibujando) return;
-    ctx.fillStyle = "black";
-    ctx.beginPath();
-    ctx.arc(evento.offsetX, evento.offsetY, 8, 0, Math.PI * 2);
-    ctx.fill();
-}
-
+// Función para limpiar el canvas
 function limpiarCanvas() {
-    ctx.fillStyle = "white";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    document.getElementById('resultado').innerText = '';
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    resultado.innerHTML = '';
 }
 
-async function cargarModelo() {
-    modelo = await tf.loadLayersModel('model.json');
-    console.log("Modelo cargado");
+// Función para dibujar en el canvas
+canvas.addEventListener("mousedown", function (e) {
+    ctx.beginPath();
+    ctx.moveTo(e.offsetX, e.offsetY);
+    canvas.addEventListener("mousemove", dibujar);
+});
+canvas.addEventListener("mouseup", function () {
+    canvas.removeEventListener("mousemove", dibujar);
+});
+function dibujar(e) {
+    ctx.lineTo(e.offsetX, e.offsetY);
+    ctx.stroke();
 }
 
+// Función para predecir la prenda
 async function predecir() {
-    if (!modelo) {
-        alert("El modelo aún no está cargado.");
-        return;
+    if (modelo !== null) {
+        // Preprocesar el canvas para que sea adecuado para el modelo
+        let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        let tensor = tf.browser.fromPixels(imageData).mean(2).toFloat().expandDims(0).expandDims(-1);
+        tensor = tensor.div(255.0); // Normaliza los valores de los píxeles
+
+        // Realizar la predicción
+        let prediccion = await modelo.predict(tensor).data();
+        let clase = prediccion.indexOf(Math.max(...prediccion));
+
+        // Mostrar el resultado
+        resultado.innerHTML = `Predicción: ${clase}`;
+    } else {
+        resultado.innerHTML = "Cargando el modelo, intenta de nuevo...";
     }
-
-    // Procesar la imagen del canvas
-    let img = tf.browser.fromPixels(canvas, 1); // 1 canal (gris)
-    img = tf.image.resizeBilinear(img, [28, 28]);
-    img = tf.cast(img, 'float32').div(255.0);
-    img = img.expandDims(0); // (1, 28, 28, 1)
-
-    const prediccion = modelo.predict(img);
-    const predArray = await prediccion.array();
-    const indice = predArray[0].indexOf(Math.max(...predArray[0]));
-    
-    const nombres_clases = [
-        "Camiseta/Top", "Pantalón", "Suéter", "Vestido", "Abrigo",
-        "Sandalia", "Camisa", "Zapatilla", "Bolso", "Botín"
-    ];
-
-    document.getElementById('resultado').innerText = 
-        `Predicción: ${nombres_clases[indice]}`;
-
-    img.dispose();
-    prediccion.dispose();
 }
-
-// Cargar modelo al abrir la página
-cargarModelo();
 
