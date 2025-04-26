@@ -8,8 +8,9 @@
   <script defer src="script.js"></script>
   <style>
     body { font-family: Arial, sans-serif; text-align: center; margin-top: 20px; }
-    #video, #imagen, #canvas { display: none; margin-top: 20px; }
+    #video, #imagen { display: none; margin-top: 20px; }
     button { margin: 10px; padding: 10px 20px; }
+    #resultado { margin-top: 20px; font-size: 20px; font-weight: bold; }
   </style>
 </head>
 <body>
@@ -23,10 +24,10 @@
 
   <br>
   <video id="video" width="200" height="150" autoplay></video>
-  <canvas id="canvas" width="28" height="28"></canvas>
+  <canvas id="canvas" width="200" height="200" style="display:none;"></canvas>
   <img id="imagen" alt="Imagen seleccionada">
 
-  <h2 id="resultado"></h2>
-  <div id="resultado" style="margin-top: 20px; font-size: 20px; font-weight: bold;"></div>
+  <div id="resultado"></div>
+
 </body>
 </html>
