@@ -4,31 +4,28 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Detector de Prendas</title>
+  <link rel="stylesheet" href="styles.css">
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.9.0/dist/tf.min.js"></script>
   <script defer src="script.js"></script>
-  <style>
-    body { font-family: Arial, sans-serif; text-align: center; margin-top: 20px; }
-    #video, #imagen { display: none; margin-top: 20px; }
-    button { margin: 10px; padding: 10px 20px; }
-    #resultado { margin-top: 20px; font-size: 20px; font-weight: bold; }
-  </style>
 </head>
 <body>
 
-  <h1>Detector de Prendas</h1>
+  <div class="contenedor">
+    <h1>Detector de Prendas</h1>
 
-  <input type="file" id="file-input" accept="image/*">
-  <br>
-  <button id="camara-btn">Usar Cámara</button>
-  <button id="capturar-btn" style="display:none;">Capturar Imagen</button>
+    <input type="file" id="file-input" accept="image/*">
+    <div class="botones">
+      <button id="camara-btn">Usar Cámara</button>
+      <button id="capturar-btn" style="display:none;">Capturar Imagen</button>
+    </div>
 
-  <br>
-  <video id="video" width="200" height="150" autoplay></video>
-  <canvas id="canvas" width="28" height="28"></canvas>
-  <img id="imagen" alt="Imagen seleccionada">
-  <h2 id="resultado" style="margin-top: 20px; font-size: 20px; font-weight: bold;"></h2>
+    <video id="video" width="200" height="150" autoplay></video>
+    <canvas id="canvas" width="28" height="28" style="display:none;"></canvas>
+    <img id="imagen" alt="Imagen seleccionada">
 
-
+    <h2 id="resultado"></h2>
+  </div>
 
 </body>
 </html>
+
