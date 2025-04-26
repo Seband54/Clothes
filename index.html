@@ -1,23 +1,18 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Detector de Prendas</title>
-  <link rel="stylesheet" href="styles.css">
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
-  <script defer src="script.js"></script>
+    <meta charset="UTF-8">
+    <title>Predicción de Prendas</title>
 </head>
 <body>
-  <div class="contenedor">
-    <h1>Detector de Prendas</h1>
+    <h1>¿Qué prenda dibujaste?</h1>
+    <canvas id="canvas" width="280" height="280" style="border:1px solid #000;"></canvas>
+    <br>
+    <button onclick="limpiarCanvas()">Limpiar</button>
+    <button onclick="predecir()">Predecir</button>
+    <h2 id="resultado"></h2>
 
-    <label for="inputImagen" class="boton-subir">📷 Seleccionar imagen</label>
-    <input id="inputImagen" type="file" accept="image/*" onchange="procesarImagen(event)" hidden>
-
-    <canvas id="previewCanvas" width="28" height="28" style="display:none;"></canvas>
-
-    <div id="resultado">🔍 Esperando imagen...</div>
-  </div>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
+    <script src="script.js"></script>
 </body>
 </html>
