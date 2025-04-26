@@ -1,48 +1,65 @@
 let modelo;
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+let dibujando = false;
+
+// Inicializar fondo blanco
+ctx.fillStyle = "white";
+ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+// Eventos para dibujar
+canvas.addEventListener('mousedown', () => dibujando = true);
+canvas.addEventListener('mouseup', () => dibujando = false);
+canvas.addEventListener('mouseout', () => dibujando = false);
+canvas.addEventListener('mousemove', dibujar);
+
+function dibujar(evento) {
+    if (!dibujando) return;
+    ctx.fillStyle = "black";
+    ctx.beginPath();
+    ctx.arc(evento.offsetX, evento.offsetY, 8, 0, Math.PI * 2);
+    ctx.fill();
+}
+
+function limpiarCanvas() {
+    ctx.fillStyle = "white";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    document.getElementById('resultado').innerText = '';
+}
 
 async function cargarModelo() {
-  modelo = await tf.loadLayersModel('model.json');
-  console.log("✅ Modelo cargado correctamente");
+    modelo = await tf.loadLayersModel('modelo_js/model.json');
+    console.log("Modelo cargado");
 }
 
-async function predecirImagen(imagenHTML) {
-  const tensor = tf.browser.fromPixels(imagenHTML, 1)
-    .resizeNearestNeighbor([28, 28])
-    .toFloat()
-    .div(255.0)
-    .expandDims();
+async function predecir() {
+    if (!modelo) {
+        alert("El modelo aún no está cargado.");
+        return;
+    }
 
-  const prediccion = modelo.predict(tensor);
-  const valores = await prediccion.data();
-  const indice = valores.indexOf(Math.max(...valores));
+    // Procesar la imagen del canvas
+    let img = tf.browser.fromPixels(canvas, 1); // 1 canal (gris)
+    img = tf.image.resizeBilinear(img, [28, 28]);
+    img = tf.cast(img, 'float32').div(255.0);
+    img = img.expandDims(0); // (1, 28, 28, 1)
 
-  const etiquetas = [
-    "Camiseta", "Pantalón", "Suéter", "Vestido", "Abrigo",
-    "Sandalia", "Camisa", "Zapatilla", "Bolso", "Bota"
-  ];
+    const prediccion = modelo.predict(img);
+    const predArray = await prediccion.array();
+    const indice = predArray[0].indexOf(Math.max(...predArray[0]));
+    
+    const nombres_clases = [
+        "Camiseta/Top", "Pantalón", "Suéter", "Vestido", "Abrigo",
+        "Sandalia", "Camisa", "Zapatilla", "Bolso", "Botín"
+    ];
 
-  const prenda = etiquetas[indice];
-  const confianza = (valores[indice] * 100).toFixed(2);
+    document.getElementById('resultado').innerText = 
+        `Predicción: ${nombres_clases[indice]}`;
 
-  document.getElementById("resultado").innerText = `🔎 Prenda detectada: ${prenda} (${confianza}% confianza)`;
+    img.dispose();
+    prediccion.dispose();
 }
 
-function procesarImagen(event) {
-  const archivo = event.target.files[0];
-  const lector = new FileReader();
+// Cargar modelo al abrir la página
+cargarModelo();
 
-  lector.onload = function(e) {
-    const img = new Image();
-    img.onload = function() {
-      const canvas = document.getElementById("previewCanvas");
-      const ctx = canvas.getContext("2d");
-      ctx.drawImage(img, 0, 0, 28, 28); // Redimensiona a 28x28
-      predecirImagen(canvas);
-    };
-    img.src = e.target.result;
-  };
-  lector.readAsDataURL(archivo);
-}
-
-// Cargar el modelo al iniciar la página
-window.onload = cargarModelo;
