@@ -6,7 +6,7 @@ let resultado = document.getElementById("resultado");
 // Cargar el modelo preentrenado
 (async () => {
     console.log("Cargando modelo...");
-    modelo = await tf.loadLayersModel("ruta/a/tu/modelo/model.json");
+    modelo = await tf.loadLayersModel("model.json");
     console.log("Modelo cargado...");
 })();
 
