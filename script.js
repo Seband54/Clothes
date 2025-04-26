@@ -6,7 +6,7 @@ const clases = [
 
 // Cargar el modelo
 (async () => {
-  modelo = await tf.loadLayersModel('model.json');  // Asegúrate de que el modelo esté disponible en 'model.json'
+  modelo = await tf.loadLayersModel('tfjs_target_dir/model.json');  // Asegúrate de que el modelo esté en la ruta correcta
   console.log('Modelo cargado');
 })();
 
@@ -50,4 +50,3 @@ document.getElementById('capturar-btn').addEventListener('click', () => {
     document.getElementById('resultado').innerText = `Predicción: ${clases[prediccion]}`;
   });
 });
-
