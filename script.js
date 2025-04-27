@@ -4,39 +4,50 @@ let ctx = canvas.getContext("2d");
 let resultado = document.getElementById("resultado");
 let grosorInput = document.getElementById("grosor");
 
+// Configurar grosor inicial
 ctx.lineWidth = grosorInput.value;
-ctx.lineCap = "round";
-ctx.strokeStyle = "#000";
+ctx.lineCap = "round"; // Para que el trazo sea más suave
 
-grosorInput.addEventListener("input", () => {
-    ctx.lineWidth = grosorInput.value;
+// Actualizar grosor al mover la barra
+grosorInput.addEventListener("input", function () {
+    ctx.lineWidth = this.value;
 });
 
+// Cargar el modelo preentrenado
 (async () => {
     console.log("Cargando modelo...");
     modelo = await tf.loadLayersModel('model.json');
     modelo.build([null, 28, 28, 1]);
+    console.log("Modelo cargado.");
 })();
 
-canvas.addEventListener("mousedown", function (e) {
-    ctx.beginPath();
-    ctx.moveTo(e.offsetX, e.offsetY);
-    canvas.addEventListener("mousemove", dibujar);
-});
-canvas.addEventListener("mouseup", function () {
-    canvas.removeEventListener("mousemove", dibujar);
-});
-
-function dibujar(e) {
-    ctx.lineTo(e.offsetX, e.offsetY);
-    ctx.stroke();
-}
-
+// Función para limpiar el canvas
 function limpiarCanvas() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     resultado.innerHTML = '';
 }
 
+// Función para dibujar en el canvas
+let dibujando = false;
+
+canvas.addEventListener("mousedown", function (e) {
+    dibujando = true;
+    ctx.beginPath();
+    ctx.moveTo(e.offsetX, e.offsetY);
+});
+
+canvas.addEventListener("mousemove", function (e) {
+    if (dibujando) {
+        ctx.lineTo(e.offsetX, e.offsetY);
+        ctx.stroke();
+    }
+});
+
+canvas.addEventListener("mouseup", function () {
+    dibujando = false;
+});
+
+// Función para predecir la prenda
 async function predecir() {
     if (modelo !== null) {
         let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
@@ -45,10 +56,10 @@ async function predecir() {
 
         let prediccion = await modelo.predict(tensor).data();
         let clase = prediccion.indexOf(Math.max(...prediccion));
+
         resultado.innerHTML = `Predicción: ${clase}`;
     } else {
         resultado.innerHTML = "Cargando el modelo, intenta de nuevo...";
     }
 }
-
 
