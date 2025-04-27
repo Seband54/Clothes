@@ -47,6 +47,29 @@ canvas.addEventListener("mouseup", function () {
     dibujando = false;
 });
 
+canvas.addEventListener("touchstart", function (e) {
+    e.preventDefault(); // Evitar scroll al tocar
+    dibujando = true;
+    let rect = canvas.getBoundingClientRect();
+    let touch = e.touches[0];
+    ctx.beginPath();
+    ctx.moveTo(touch.clientX - rect.left, touch.clientY - rect.top);
+});
+
+canvas.addEventListener("touchmove", function (e) {
+    e.preventDefault();
+    if (dibujando) {
+        let rect = canvas.getBoundingClientRect();
+        let touch = e.touches[0];
+        ctx.lineTo(touch.clientX - rect.left, touch.clientY - rect.top);
+        ctx.stroke();
+    }
+});
+
+canvas.addEventListener("touchend", function (e) {
+    dibujando = false;
+});
+
 // Función para predecir la prenda
 async function predecir() {
     if (modelo !== null) {
