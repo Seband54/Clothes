@@ -82,7 +82,7 @@ async function predecir() {
 
         resultado.innerHTML = `Predicción: ${clase}`;
     } else {
-        resultado.innerHTML = "Trouser";
+        resultado.innerHTML = "Cargando el modelo, intenta de nuevo...";
     }
 }
 
