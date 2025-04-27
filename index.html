@@ -3,24 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <title>Predicción de Prendas</title>
-    <style>
-        #canvas {
-            border: 1px solid #000;
-        }
-        #resultado {
-            font-weight: bold;
-            font-size: 1.2rem;
-            text-align: center;
-        }
-    </style>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h1>¿Qué prenda dibujaste?</h1>
-    <canvas id="canvas" width="280" height="280"></canvas>
-    <br>
-    <button onclick="limpiarCanvas()">Limpiar</button>
-    <button onclick="predecir()">Predecir</button>
-    <h2 id="resultado"></h2>
+    <div class="contenedor">
+        <h1>¿Qué prenda dibujaste?</h1>
+        <canvas id="canvas" width="280" height="280"></canvas>
+        <br><br>
+
+        <label for="grosor">Grosor del trazo:</label>
+        <input type="range" id="grosor" min="1" max="30" value="10">
+        <br><br>
+
+        <button class="boton" onclick="limpiarCanvas()">Limpiar</button>
+        <button class="boton" onclick="predecir()">Predecir</button>
+
+        <h2 id="resultado"></h2>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
     <script src="script.js"></script>
