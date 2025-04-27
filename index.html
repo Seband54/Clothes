@@ -2,26 +2,71 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Predicción de Prendas</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Dibuja aquí</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        canvas {
+            border: 2px solid black;
+            background-color: white;
+            touch-action: none; /* Evita que el navegador intente desplazarse al tocar */
+        }
+    </style>
 </head>
 <body>
-    <div class="contenedor">
-        <h1>¿Qué prenda dibujaste?</h1>
-        <canvas id="canvas" width="280" height="280"></canvas>
-        <br><br>
+    <canvas id="canvas" width="280" height="280"></canvas>
 
-        <label for="grosor">Grosor del trazo:</label>
-        <input type="range" id="grosor" min="1" max="30" value="10">
-        <br><br>
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let dibujando = false;
 
-        <button class="boton" onclick="limpiarCanvas()">Limpiar</button>
-        <button class="boton" onclick="predecir()">Predecir</button>
+        function comenzarDibujo(x, y) {
+            dibujando = true;
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+        }
 
-        <h2 id="resultado"></h2>
-    </div>
+        function dibujar(x, y) {
+            if (!dibujando) return;
+            ctx.lineWidth = 15;
+            ctx.lineCap = 'round';
+            ctx.strokeStyle = 'black';
+            ctx.lineTo(x, y);
+            ctx.stroke();
+        }
 
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
-    <script src="script.js"></script>
+        function terminarDibujo() {
+            dibujando = false;
+            ctx.closePath();
+        }
+
+        // Soporte mouse
+        canvas.addEventListener('mousedown', e => comenzarDibujo(e.offsetX, e.offsetY));
+        canvas.addEventListener('mousemove', e => dibujar(e.offsetX, e.offsetY));
+        canvas.addEventListener('mouseup', terminarDibujo);
+        canvas.addEventListener('mouseleave', terminarDibujo);
+
+        // Soporte touch
+        canvas.addEventListener('touchstart', e => {
+            e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            const touch = e.touches[0];
+            comenzarDibujo(touch.clientX - rect.left, touch.clientY - rect.top);
+        });
+        canvas.addEventListener('touchmove', e => {
+            e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            const touch = e.touches[0];
+            dibujar(touch.clientX - rect.left, touch.clientY - rect.top);
+        });
+        canvas.addEventListener('touchend', terminarDibujo);
+    </script>
 </body>
 </html>
