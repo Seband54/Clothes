@@ -6,8 +6,8 @@ let resultado = document.getElementById("resultado");
 // Cargar el modelo preentrenado
 (async () => {
     console.log("Cargando modelo...");
-    modelo = await tf.loadLayersModel("model.json");
-    console.log("Modelo cargado...");
+    const model = await tf.loadLayersModel('model.json');
+    model.build([null, 28, 28, 1]); 
 })();
 
 // Función para limpiar el canvas
